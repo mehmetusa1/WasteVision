@@ -1,5 +1,3 @@
-Harika bir isim! WasteVision için hem GitHub profilinde hem de CV’nde parlayacak, profesyonel bir README taslağı hazırladım. Bu taslağı projenin içeriğine göre (yöntem, kullanılan kütüphaneler vb.) ufak dokunuşlarla özelleştirebilirsin.
-
 ♻️ WasteVision
 WasteVision, yapay zeka ve bilgisayarlı görü (Computer Vision) tekniklerini kullanarak atıkların gerçek zamanlı olarak sınıflandırılmasını sağlayan akıllı bir atık yönetim sistemidir. Sürdürülebilir bir gelecek için geri dönüşüm süreçlerini otomatize etmeyi hedefler.
 
