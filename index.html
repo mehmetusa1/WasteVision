@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WasteVision – Blockchain-Powered Waste Management</title>
+  <meta name="description"
+    content="WasteVision, atık yönetimini blokzinciri teknolojisiyle birleştiren sürdürülebilir bir çözüm platformudur. WVT token'ları kazanın." />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Animated background particles (EU Stars) moved here for global scrolling -->
+  <div class="wv-particles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <!-- Extra stars for better scrolling spread -->
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════ -->
+  <nav class="navbar navbar-expand-lg navbar-dark wv-navbar fixed-top" id="mainNav">
+    <div class="container-xl">
+      <!-- Brand -->
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <span class="wv-logo-icon">
+          <i class="bi bi-recycle"></i>
+        </span>
+        <span class="wv-brand-text">Waste<span class="text-accent">Vision</span></span>
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav mx-auto gap-1">
+          <li class="nav-item"><a class="nav-link active" href="#hero">Ana Sayfa</a></li>
+          <li class="nav-item"><a class="nav-link" href="#features">Özellikler</a></li>
+          <li class="nav-item"><a class="nav-link" href="#record">Atık Kaydet</a></li>
+          <li class="nav-item"><a class="nav-link" href="#stats">İstatistikler</a></li>
+          <li class="nav-item"><a class="nav-link" href="#how">Nasıl Çalışır</a></li>
+        </ul>
+
+        <!-- Wallet Area -->
+        <div class="d-flex align-items-center gap-3 ms-lg-4">
+          <!-- WVT Balance Badge -->
+          <div class="wv-balance-badge d-none" id="balanceBadge">
+            <i class="bi bi-coin text-accent"></i>
+            <span class="wv-balance-label">WVT Bakiyem:</span>
+            <span class="wv-balance-value" id="wvtBalance">0.00</span>
+            <span class="wv-balance-unit">WVT</span>
+          </div>
+
+          <!-- Wallet address pill (shown when connected) -->
+          <div class="wv-address-pill d-none" id="addressPill">
+            <span class="wv-dot"></span>
+            <span id="walletAddress">0x000...0000</span>
+          </div>
+
+          <!-- Connect / Disconnect Button -->
+          <button class="btn wv-btn-connect" id="btnConnectWallet" onclick="connectWallet()">
+            <i class="bi bi-wallet2 me-2"></i>Cüzdanı Bağla
+          </button>
+          <button class="btn wv-btn-disconnect d-none" id="btnDisconnectWallet" onclick="disconnectWallet()">
+            <i class="bi bi-power me-2"></i>Bağlantıyı Kes
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       HERO SECTION
+  ══════════════════════════════════════ -->
+  <section class="wv-hero text-center" id="hero">
+
+    <div class="container position-relative">
+      <div class="wv-hero-badge mb-4">
+        <i class="bi bi-stars me-2"></i>Blokzinciri × Sürdürülebilirlik
+      </div>
+      <h1 class="wv-hero-title">
+        Atığını Kaydet,<br />
+        <span class="text-gradient">Token Kazan</span>
+      </h1>
+      <p class="wv-hero-sub mt-3 mb-5">
+        WasteVision, çevre dostu davranışları on-chain olarak doğrular ve seni<br />
+        <strong>WVT token'larıyla</strong> ödüllendirir. Avrupa Yeşil Mutabakatı'nın ruhunda.
+      </p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="#record" class="btn wv-btn-primary btn-lg">
+          <i class="bi bi-plus-circle me-2"></i>Atık Kaydı Yap
+        </a>
+        <a href="#how" class="btn wv-btn-outline btn-lg">
+          <i class="bi bi-play-circle me-2"></i>Nasıl Çalışır?
+        </a>
+      </div>
+
+      <!-- Hero Stats -->
+      <div class="wv-hero-stats mt-5">
+        <div class="wv-stat-card">
+          <span class="wv-stat-num" id="totalWaste">0</span>
+          <span class="wv-stat-label">Kayıtlı Atık (kg)</span>
+        </div>
+        <div class="wv-stat-card">
+          <span class="wv-stat-num" id="totalMinted">0</span>
+          <span class="wv-stat-label">WVT Basıldı</span>
+        </div>
+        <div class="wv-stat-card">
+          <span class="wv-stat-num" id="totalUsers">0</span>
+          <span class="wv-stat-label">Aktif Kullanıcı</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FEATURES SECTION
+  ══════════════════════════════════════ -->
+  <section class="wv-section" id="features">
+    <div class="container-xl">
+      <div class="wv-section-header text-center mb-5">
+        <span class="wv-label">PLATFORM ÖZELLİKLERİ</span>
+        <h2 class="wv-section-title">Neden WasteVision?</h2>
+        <p class="wv-section-sub">Şeffaf, güvenilir ve ödüllendirici bir çevre yönetim ekosistemi.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h5>Şeffaf Doğrulama</h5>
+            <p>Her atık kaydı Ethereum ağında değiştirilemez biçimde saklanır. Manipülasyon imkânsız.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon accent-2">
+              <i class="bi bi-award"></i>
+            </div>
+            <h5>Otomatik Ödüllendirme</h5>
+            <p>Kontrakt, atık miktarına göre anında WVT token basar. İnsan müdahalesi gerektirmez.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon accent-3">
+              <i class="bi bi-globe-europe-africa"></i>
+            </div>
+            <h5>AB Uyumlu</h5>
+            <p>Avrupa Yeşil Mutabakatı ve döngüsel ekonomi prensipleriyle tam uyumlu bir protokol.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon accent-4">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5>Gerçek Zamanlı Analitik</h5>
+            <p>Kişisel ve topluluk genelindeki atık azaltma istatistiklerini anlık takip edin.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon accent-5">
+              <i class="bi bi-lock"></i>
+            </div>
+            <h5>Merkezi Olmayan</h5>
+            <p>Hiçbir merkezi otorite yok. Akıllı kontrat tüm iş mantığını şeffaf biçimde yürütür.</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="wv-feature-card h-100">
+            <div class="wv-feature-icon accent-6">
+              <i class="bi bi-recycle"></i>
+            </div>
+            <h5>Geri Dönüşüm Takibi</h5>
+            <p>Plastik, cam, metal ve organik atıkları kategorize ederek kayıt altına alın.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       RECORD WASTE SECTION
+  ══════════════════════════════════════ -->
+  <section class="wv-section wv-section-alt" id="record">
+    <div class="container-xl">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-5">
+          <span class="wv-label">ON-CHAIN İŞLEM</span>
+          <h2 class="wv-section-title mt-2">Atık Kaydı & Mint</h2>
+          <p class="wv-section-sub">
+            Atık verilerini blokzincire kaydet ve karşılığında otomatik olarak WVT token kazan.
+            MetaMask cüzdanını bağlayarak başla.
+          </p>
+          <ul class="wv-checklist mt-4">
+            <li><i class="bi bi-check-circle-fill"></i> Cüzdanını bağla</li>
+            <li><i class="bi bi-check-circle-fill"></i> Atık türü ve miktarı gir</li>
+            <li><i class="bi bi-check-circle-fill"></i> Konum bilgisi ekle</li>
+            <li><i class="bi bi-check-circle-fill"></i> İşlemi onayla & WVT kazan</li>
+          </ul>
+        </div>
+        <div class="col-lg-7">
+          <div class="wv-form-card">
+            <div class="wv-form-header">
+              <i class="bi bi-file-earmark-plus me-2"></i>Yeni Atık Kaydı
+              <span class="ms-auto wv-chain-badge">
+                <span class="wv-dot-green"></span>Ethereum
+              </span>
+            </div>
+
+            <!-- Wallet Warning -->
+            <div class="alert wv-alert-warning d-flex align-items-center gap-2" id="walletWarning" role="alert">
+              <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+              <span>İşlem yapabilmek için önce <strong>MetaMask cüzdanınızı bağlamanız</strong> gerekiyor.</span>
+            </div>
+
+            <!-- TX Status -->
+            <div class="wv-tx-status d-none" id="txStatus">
+              <div class="wv-tx-inner">
+                <div class="wv-spinner" id="txSpinner"></div>
+                <span id="txMessage">İşlem gönderiliyor...</span>
+              </div>
+            </div>
+
+            <form id="wasteForm" onsubmit="handleRecordWaste(event)" novalidate>
+              <div class="row g-3">
+                <!-- AI Image Dropzone -->
+                <div class="col-12 text-center position-relative">
+                  <!-- Wallet Connect Overlay -->
+                  <div id="aiDropzoneOverlay"
+                    class="position-absolute w-100 h-100 d-flex flex-column justify-content-center align-items-center"
+                    style="top:0; left:0; z-index:10; background:rgba(1,28,71,0.85); backdrop-filter:blur(3px); transition: 0.3s; border-radius:14px; pointer-events:all;">
+                    <i class="bi bi-wallet2 text-accent fs-1 mb-2"></i>
+                    <h5 class="text-white fw-bold">Bağlantı Bekleniyor</h5>
+                    <p class="small text-white-50 mb-0">Fotoğraf yüklemek için cüzdanınızı bağlayın.</p>
+                  </div>
+
+                  <div class="wv-ai-dropzone" id="aiDropzone" onclick="document.getElementById('aiImageInput').click()">
+                    <input type="file" id="aiImageInput" accept="image/*" class="d-none"
+                      onchange="handleImageUpload(event)" />
+                    <div class="wv-upload-icon"><i class="bi bi-camera"></i></div>
+                    <h5>Atık Fotoğrafını Yükle veya Çek</h5>
+                    <p class="text-muted small mb-0">Tıklayarak kameranızı açabilir veya fotoğraf seçebilirsiniz</p>
+                  </div>
+
+                  <!-- Preview & Analysis -->
+                  <div class="wv-ai-preview d-none mt-3" id="aiPreviewBox">
+                    <div class="wv-preview-img-wrap position-relative mx-auto"
+                      style="max-width: 300px; border-radius: var(--radius-md); overflow: hidden;">
+                      <img id="aiImagePreview" src="" alt="Atık Önizleme" class="w-100" />
+                      <!-- Scanning overlay -->
+                      <div class="wv-scan-overlay d-none" id="aiScanOverlay">
+                        <div class="wv-scan-line"></div>
+                        <span class="wv-scan-text">Yapay Zeka Analiz Ediyor...</span>
+                      </div>
+                    </div>
+
+                    <!-- Result -->
+                    <div class="wv-ai-result mt-3 p-3 d-none" id="aiResultArea"
+                      style="background: rgba(0,229,168,0.1); border-radius: var(--radius-sm); border: 1px solid rgba(0,229,168,0.3);">
+                      <div class="wv-ai-match fw-bold fs-5">
+                        <i class="bi bi-robot me-2 text-accent"></i>
+                        <span id="aiDetectedType" class="text-primary-emphasis text-white">Tespit Edilen: -</span>
+                      </div>
+                      <p class="small text-muted mb-0 mt-1" id="aiConfidence">Eminlik: -</p>
+                      <p class="small text-muted mb-0" id="aiRawClass">Model Tahmini: -</p>
+
+                      <!-- Location Validation -->
+                      <div class="mt-3 p-2 rounded d-flex align-items-start gap-2 text-start" id="aiLocationStatus"
+                        style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);">
+                        <i class="bi bi-geo-alt-fill text-muted mt-1" id="aiLocationIcon"></i>
+                        <span class="small text-muted lh-sm" id="aiLocationText">Konum kontrol ediliyor...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Estimated Reward -->
+                <div class="col-12 mt-4">
+                  <div class="wv-reward-preview" id="rewardPreview">
+                    <span><i class="bi bi-coin me-1 text-accent"></i>Tahmini Ödül:</span>
+                    <span class="wv-reward-amount" id="rewardAmount">– WVT</span>
+                  </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-12 mt-2">
+                  <button type="submit" class="btn wv-btn-primary w-100 wv-btn-record" id="btnRecord" disabled>
+                    <span class="btn-text" id="btnRecordText">
+                      <i class="bi bi-image me-2"></i>Önce Fotoğraf Yükleyin
+                    </span>
+                    <span class="btn-loading d-none">
+                      <span class="spinner-border spinner-border-sm me-2"></span>İşlem bekleniyor...
+                    </span>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary w-100 mt-2 d-none" id="btnResetAi"
+                    onclick="resetAiForm()">Yeni Fotoğraf Ekle</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       STATS SECTION
+  ══════════════════════════════════════ -->
+  <section class="wv-section" id="stats">
+    <div class="container-xl">
+      <div class="wv-section-header text-center mb-5">
+        <span class="wv-label">CANLI VERİ</span>
+        <h2 class="wv-section-title">Platform İstatistikleri</h2>
+      </div>
+      <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="wv-stats-big text-center">
+            <div class="wv-stats-icon"><i class="bi bi-trash3"></i></div>
+            <div class="wv-stats-value counter" data-target="12847">0</div>
+            <div class="wv-stats-unit">kg Atık Kaydedildi</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="wv-stats-big text-center">
+            <div class="wv-stats-icon accent-2"><i class="bi bi-coin"></i></div>
+            <div class="wv-stats-value counter" data-target="48320">0</div>
+            <div class="wv-stats-unit">WVT Token Basıldı</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="wv-stats-big text-center">
+            <div class="wv-stats-icon accent-3"><i class="bi bi-people"></i></div>
+            <div class="wv-stats-value counter" data-target="1203">0</div>
+            <div class="wv-stats-unit">Kayıtlı Kullanıcı</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="wv-stats-big text-center">
+            <div class="wv-stats-icon accent-4"><i class="bi bi-tree"></i></div>
+            <div class="wv-stats-value counter" data-target="642">0</div>
+            <div class="wv-stats-unit">Ton CO₂ Azaltıldı</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       HOW IT WORKS
+  ══════════════════════════════════════ -->
+  <section class="wv-section wv-section-alt" id="how">
+    <div class="container-xl">
+      <div class="wv-section-header text-center mb-5">
+        <span class="wv-label">SÜREÇ</span>
+        <h2 class="wv-section-title">Nasıl Çalışır?</h2>
+      </div>
+      <div class="row g-4 justify-content-center">
+        <div class="col-lg-3 col-md-6 text-center">
+          <div class="wv-step">
+            <div class="wv-step-num">01</div>
+            <div class="wv-step-icon"><i class="bi bi-wallet2"></i></div>
+            <h6>MetaMask'i Bağla</h6>
+            <p>Ethereum uyumlu cüzdanını platforma bağla ve kimliğini doğrula.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 text-center">
+          <div class="wv-step">
+            <div class="wv-step-num">02</div>
+            <div class="wv-step-icon accent-2"><i class="bi bi-clipboard-data"></i></div>
+            <h6>Atık Verisini Gir</h6>
+            <p>Atık türü, miktarı ve konumunu formu doldurarak sisteme ilet.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 text-center">
+          <div class="wv-step">
+            <div class="wv-step-num">03</div>
+            <div class="wv-step-icon accent-3"><i class="bi bi-send-check"></i></div>
+            <h6>TX Onayla</h6>
+            <p>MetaMask pop-up penceresinde işlemi onayla, akıllı kontrat devreye girer.</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 text-center">
+          <div class="wv-step">
+            <div class="wv-step-num">04</div>
+            <div class="wv-step-icon accent-4"><i class="bi bi-trophy"></i></div>
+            <h6>WVT Kazan</h6>
+            <p>Kontrat otomatik olarak WVT token'larını cüzdanına aktarır.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       TRANSACTION LOG
+  ══════════════════════════════════════ -->
+  <section class="wv-section" id="txlog">
+    <div class="container-xl">
+      <div class="wv-section-header text-center mb-4">
+        <span class="wv-label">SON İŞLEMLER</span>
+        <h2 class="wv-section-title">İşlem Geçmişi</h2>
+      </div>
+      <div class="wv-tx-table-wrap">
+        <table class="table wv-tx-table">
+          <thead>
+            <tr>
+              <th>TX Hash</th>
+              <th>Atık Türü</th>
+              <th>Miktar</th>
+              <th>WVT</th>
+              <th>Durum</th>
+              <th>Zaman</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody">
+            <tr class="wv-tx-empty">
+              <td colspan="6" class="text-center py-5">
+                <i class="bi bi-inbox display-6 d-block mb-2 text-muted"></i>
+                <span class="text-muted">Henüz işlem bulunamadı. İlk kaydı siz yapın!</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer class="wv-footer">
+    <div class="container-xl">
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-4">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="wv-logo-icon sm"><i class="bi bi-recycle"></i></span>
+            <span class="wv-brand-text">Waste<span class="text-accent">Vision</span></span>
+          </div>
+          <p class="text-muted small">
+            Atığı değere dönüştüren, çevreyi koruyan ve Avrupa'nın yeşil geleceğine katkı sağlayan merkeziyetsiz bir
+            protokol.
+          </p>
+          <div class="d-flex gap-3 mt-3">
+            <a href="#" class="wv-social-btn"><i class="bi bi-twitter-x"></i></a>
+            <a href="#" class="wv-social-btn"><i class="bi bi-discord"></i></a>
+            <a href="#" class="wv-social-btn"><i class="bi bi-github"></i></a>
+            <a href="#" class="wv-social-btn"><i class="bi bi-telegram"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-2 offset-lg-1">
+          <h6 class="wv-footer-title">Platform</h6>
+          <ul class="list-unstyled wv-footer-links">
+            <li><a href="#features">Özellikler</a></li>
+            <li><a href="#record">Atık Kaydı</a></li>
+            <li><a href="#stats">İstatistikler</a></li>
+            <li><a href="#how">Nasıl Çalışır</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-2">
+          <h6 class="wv-footer-title">Kaynaklar</h6>
+          <ul class="list-unstyled wv-footer-links">
+            <li><a href="#">Dokümantasyon</a></li>
+            <li><a href="#">Akıllı Kontrat</a></li>
+            <li><a href="#">Etherscan</a></li>
+            <li><a href="#">Whitepaper</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3">
+          <h6 class="wv-footer-title">Kontrat Adresi</h6>
+          <div class="wv-contract-address">
+            <code id="footerContractAddr">0x233...Ee5c3</code>
+            <button class="wv-copy-btn" onclick="copyContractAddress()" title="Kopyala">
+              <i class="bi bi-copy"></i>
+            </button>
+          </div>
+          <p class="text-muted small mt-3">
+            <i class="bi bi-shield-check me-1 text-accent"></i>
+            Kontrat doğrulanmış & açık kaynaklı
+          </p>
+        </div>
+      </div>
+      <hr class="wv-footer-divider" />
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <p class="text-muted small mb-0">© 2024 WasteVision Protocol. Tüm hakları saklıdır.</p>
+        <p class="text-muted small mb-0">
+          <i class="bi bi-leaf me-1 text-accent"></i>Yeşil Bir Gelecek İçin
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="wvToast" class="toast wv-toast align-items-center border-0" role="alert" aria-live="assertive">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">
+          <i class="bi bi-check-circle-fill me-2"></i>İşlem başarılı!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TensorFlow JS & MobileNet -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Ethers.js v5 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <!-- App JS -->
+  <script src="app.js?v=10"></script>
+</body>
+
+</html>
