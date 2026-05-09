@@ -3,6 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import L from 'leaflet'
 import type { TxEntry } from '../App'
+import { type Lang, t } from '../i18n'
 
 // Fix Leaflet icons in Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -12,12 +13,14 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
 });
 
-const WASTE_TYPES = ['Plastik','Cam','Metal','Kağıt','Organik','Tehlikeli','E-Atık']
+const WASTE_TYPES_EN = ['Plastic','Glass','Metal','Paper','Organic','Hazardous','E-Waste']
+const WASTE_TYPES_TR = ['Plastik','Cam','Metal','Kağıt','Organik','Tehlikeli','E-Atık']
 const REWARD_RATES: Record<number,number> = {0:5,1:3,2:10,3:2,4:1,5:1,6:1}
 
 interface Props {
   wslBalance: number
   onSuccess: (entry: TxEntry) => void
+  lang: Lang
 }
 
 type Status = 'idle' | 'signing' | 'success' | 'error'
@@ -27,8 +30,10 @@ type LocStatus = 'idle' | 'fetching' | 'success' | 'error'
 // mobilenet global olarak window üzerinden erişilir (CDN script)
 declare global { interface Window { mobilenet: any } }
 
-export default function RecordWaste({ wslBalance, onSuccess }: Props) {
+export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
   const { publicKey, signMessage, connected } = useWallet()
+  const tr = t(lang)
+  const WASTE_TYPES = lang === 'en' ? WASTE_TYPES_EN : WASTE_TYPES_TR
 
   // General State
   const [wasteType,  setWasteType]  = useState<number | null>(null)
@@ -101,7 +106,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
       })
 
       // User Marker
-      L.marker(userCoords).addTo(map).bindPopup("Siz buradasınız").openPopup()
+      L.marker(userCoords).addTo(map).bindPopup(tr.rw_marker_user).openPopup()
       L.circle(userCoords, { radius: 50, color: 'rgba(0,229,168,0.5)', fillOpacity: 0.1 }).addTo(map)
 
       // Bin Markers
@@ -112,7 +117,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
       })
 
       allBins.forEach(b => {
-        L.marker([b.lat, b.lon], { icon: binIcon }).addTo(map).bindPopup("Geri Dönüşüm Noktası")
+        L.marker([b.lat, b.lon], { icon: binIcon }).addTo(map).bindPopup(tr.rw_marker_bin)
       })
 
       map.setView(userCoords, 16)
@@ -193,7 +198,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
   // 4. Geolocation & Overpass Handlers
   const verifyLocation = () => {
     if (!navigator.geolocation) {
-      setErrorMsg("Tarayıcınız konum servisini desteklemiyor.")
+      setErrorMsg(tr.rw_err_browser_loc)
       return
     }
     
@@ -232,13 +237,13 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
           setLocStatus('success')
         } catch (err) {
           console.error(err)
-          setErrorMsg("Overpass API'den konum verisi alınırken hata oluştu.")
+          setErrorMsg(tr.rw_err_api_loc)
           setLocStatus('error')
         }
       },
       (err) => {
         console.error(err)
-        setErrorMsg("Konum izni reddedildi veya konum alınamadı.")
+        setErrorMsg(tr.rw_err_denied_loc)
         setLocStatus('error')
       },
       { enableHighAccuracy: true }
@@ -269,10 +274,10 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!publicKey || !signMessage) return
-    if (wasteType === null || amountGrams === 0) { setErrorMsg('Önce yapay zeka ile fotoğraf analiz edilmelidir.'); return }
+    if (wasteType === null || amountGrams === 0) { setErrorMsg(tr.rw_err_need_photo); return }
     
     if (!isLocationValid) {
-      setErrorMsg('You are too far from a recycling center. Please move closer to claim your reward.')
+      setErrorMsg(tr.rw_err_too_far)
       return
     }
 
@@ -281,19 +286,19 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
 
     const msgText = [
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      '  WasteVision Protokolü',
+      tr.rw_sig_title,
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      `Atık Türü  : ${WASTE_TYPES[wasteType]}`,
-      `Miktar     : ${amountGrams} gram`,
-      `Konum      : Onaylandı ${devMode ? '(Dev Mode)' : ''}`,
-      `Ödül       : +10 WSL`,
-      `Ağ         : Solana Testnet`,
-      `Tarih      : ${new Date().toLocaleString('tr-TR')}`,
-      `Cüzdan     : ${publicKey.toString().slice(0,8)}...`,
+      `${tr.rw_sig_type} ${WASTE_TYPES[wasteType]}`,
+      `${tr.rw_sig_amount} ${amountGrams} gram`,
+      `${tr.rw_sig_loc} ${tr.rw_sig_loc_ok} ${devMode ? '(Dev Mode)' : ''}`,
+      `${tr.rw_sig_reward} +10 WSL`,
+      `${tr.rw_sig_network} Solana Testnet`,
+      `${tr.rw_sig_date} ${new Date().toLocaleString(lang === 'en' ? 'en-US' : 'tr-TR')}`,
+      `${tr.rw_sig_wallet} ${publicKey.toString().slice(0,8)}...`,
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      'Bu imza atık kaydınızı onaylar.',
-      'Herhangi bir token transferi',
-      'veya gas ücreti gerçekleşmez.',
+      tr.rw_sig_note1,
+      tr.rw_sig_note2,
+      tr.rw_sig_note3,
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
     ].join('\n')
 
@@ -318,11 +323,11 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
       setAmountGrams(0)
       setTimeout(() => setStatus('idle'), 4000)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Bilinmeyen hata'
+      const msg = err instanceof Error ? err.message : 'Unknown error'
       if (msg.includes('rejected') || msg.includes('cancelled') || msg.includes('User rejected')) {
-        setErrorMsg('⛔ İşlem kullanıcı tarafından iptal edildi.')
+        setErrorMsg(tr.rw_err_user_reject)
       } else {
-        setErrorMsg('❌ Hata: ' + msg)
+        setErrorMsg(tr.rw_err_unknown + msg)
       }
       setStatus('error')
       setTimeout(() => setStatus('idle'), 4000)
@@ -333,11 +338,11 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
     <div className="wv-form-card">
       <div className="wv-form-header d-flex justify-content-between align-items-center">
         <div>
-          <i className="bi bi-file-earmark-plus me-2"/>Yeni Atık Kaydı
+          <i className="bi bi-file-earmark-plus me-2"/>{tr.rw_header}
         </div>
         <div className="d-flex gap-2 align-items-center">
-          {devMode && <span className="badge bg-warning text-dark"><i className="bi bi-bug me-1"/>Dev Mode Active</span>}
-          <div className="form-check form-switch m-0 ms-2" title="Geliştirici Modu (Konum Bypası)">
+          {devMode && <span className="badge bg-warning text-dark"><i className="bi bi-bug me-1"/>{tr.rw_dev_badge}</span>}
+          <div className="form-check form-switch m-0 ms-2" title="Developer Mode (Location Bypass)">
             <input className="form-check-input" type="checkbox" role="switch" id="devModeSwitch" 
               checked={devMode} onChange={e => setDevMode(e.target.checked)} />
           </div>
@@ -347,7 +352,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
       {!connected && (
         <div className="alert wv-alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
           <i className="bi bi-exclamation-triangle-fill flex-shrink-0"/>
-          <span>İşlem yapabilmek için önce <strong>Phantom cüzdanınızı bağlamanız</strong> gerekiyor.</span>
+          <span>{tr.rw_wallet_warn} <strong>{tr.rw_wallet_warn2}</strong> {tr.rw_wallet_warn3}</span>
         </div>
       )}
 
@@ -355,8 +360,8 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
         <div className="wv-tx-status">
           <div className="wv-tx-inner">
             <div className="wv-spinner"/>
-            <span>İşlem Onaylanıyor...<br/>
-              <small className="text-muted">Phantom cüzdanınızda imzayı onaylayın</small>
+            <span>{tr.rw_signing}<br/>
+              <small className="text-muted">{tr.rw_sign_sub}</small>
             </span>
           </div>
         </div>
@@ -367,8 +372,8 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
           style={{background:'rgba(0,229,168,0.15)',border:'1px solid rgba(0,229,168,0.4)',borderRadius:12,color:'#00e5a8'}}>
           <i className="bi bi-check-circle-fill fs-5"/>
           <div>
-            <strong>10 WSL cüzdanınıza eklendi! 🎉</strong><br/>
-            <small style={{color:'rgba(255,255,255,0.6)'}}>İmza başarıyla doğrulandı. Bakiye güncellendi.</small>
+            <strong>{tr.rw_success}</strong><br/>
+            <small style={{color:'rgba(255,255,255,0.6)'}}>{tr.rw_success_sub}</small>
           </div>
         </div>
       )}
@@ -391,8 +396,8 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                 className="position-absolute w-100 h-100 d-flex flex-column justify-content-center align-items-center"
                 style={{top:0, left:0, zIndex:10, background:'rgba(1,28,71,0.85)', backdropFilter:'blur(3px)', borderRadius:14}}>
                 <i className="bi bi-wallet2 text-accent fs-1 mb-2"></i>
-                <h5 className="text-white fw-bold">Bağlantı Bekleniyor</h5>
-                <p className="small text-white-50 mb-0">Fotoğraf yüklemek için cüzdanınızı bağlayın.</p>
+                <h5 className="text-white fw-bold">{tr.rw_overlay_wait}</h5>
+                <p className="small text-white-50 mb-0">{tr.rw_overlay_connect}</p>
               </div>
             )}
 
@@ -403,10 +408,10 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                   {aiStatus === 'loading_model' ? <div className="spinner-border text-accent"/> : <i className="bi bi-camera"></i>}
                 </div>
                 <h5>
-                  {aiStatus === 'init' || aiStatus === 'loading_model' ? 'Yapay Zeka Yükleniyor (~10MB)' : 'Atık Fotoğrafını Yükle veya Çek'}
+                  {aiStatus === 'init' || aiStatus === 'loading_model' ? tr.rw_ai_loading : tr.rw_ai_upload}
                 </h5>
                 <p className="text-muted small mb-0">
-                  {aiStatus === 'error' ? 'Model yüklenemedi. Sayfayı yenileyin.' : 'Tıklayarak kameranızı açabilir veya fotoğraf seçebilirsiniz'}
+                  {aiStatus === 'error' ? tr.rw_ai_error : tr.rw_ai_sub}
                 </p>
               </div>
             ) : (
@@ -417,7 +422,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                   {aiStatus === 'analyzing' && (
                     <div className="wv-scan-overlay">
                       <div className="wv-scan-line"></div>
-                      <span className="wv-scan-text">Yapay Zeka Analiz Ediyor...</span>
+                      <span className="wv-scan-text">{tr.rw_analysing}</span>
                     </div>
                   )}
                 </div>
@@ -426,10 +431,10 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                   <div className="wv-ai-result mt-3 p-3" style={{background: 'rgba(0,229,168,0.1)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(0,229,168,0.3)'}}>
                     <div className="wv-ai-match fw-bold fs-5">
                       <i className="bi bi-robot me-2 text-accent"></i>
-                      <span className="text-primary-emphasis text-white">Tespit Edilen: {WASTE_TYPES[wasteType]}</span>
+                      <span className="text-primary-emphasis text-white">{tr.rw_ai_detected} {WASTE_TYPES[wasteType]}</span>
                     </div>
-                    <p className="small text-muted mb-0 mt-1">Eminlik: {aiConfidence}</p>
-                    <p className="small text-muted mb-0">Model Tahmini: {aiRaw}</p>
+                    <p className="small text-muted mb-0 mt-1">{tr.rw_ai_conf} {aiConfidence}</p>
+                    <p className="small text-muted mb-0">{tr.rw_ai_raw} {aiRaw}</p>
                   </div>
                 )}
               </div>
@@ -440,12 +445,12 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
           {aiStatus === 'done' && (
             <div className="col-12 mt-3">
               <div className="p-3" style={{background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)'}}>
-                <h6 className="text-white mb-3"><i className="bi bi-geo-alt-fill text-accent me-2"/>Konum Doğrulama</h6>
+                <h6 className="text-white mb-3"><i className="bi bi-geo-alt-fill text-accent me-2"/>{tr.rw_loc_title}</h6>
                 
                 {locStatus === 'fetching' && (
                   <div className="text-center py-3">
                     <div className="spinner-border text-accent spinner-border-sm mb-2"/>
-                    <p className="small text-muted mb-0">Yakındaki geri dönüşüm noktaları aranıyor (Overpass API)...</p>
+                    <p className="small text-muted mb-0">{tr.rw_loc_fetch}</p>
                   </div>
                 )}
 
@@ -457,21 +462,21 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                       <div>
                         {nearestBin ? (
                           <>
-                            <span className="small text-muted d-block">En yakın kutuya mesafe:</span>
+                            <span className="small text-muted d-block">{tr.rw_loc_nearest}</span>
                             <span className={`fw-bold fs-5 ${nearestBin.dist <= 50 ? 'text-success' : 'text-danger'}`}>
-                              {Math.round(nearestBin.dist)} metre
+                              {Math.round(nearestBin.dist)} {tr.rw_metre}
                             </span>
                           </>
                         ) : (
-                          <span className="text-danger small">Yakında geri dönüşüm kutusu bulunamadı.</span>
+                          <span className="text-danger small">{tr.rw_loc_none}</span>
                         )}
                       </div>
                       
                       <div>
                         {isLocationValid ? (
-                          <span className="badge bg-success"><i className="bi bi-check-circle me-1"/>Onaylandı</span>
+                          <span className="badge bg-success"><i className="bi bi-check-circle me-1"/>{tr.rw_loc_ok}</span>
                         ) : (
-                          <span className="badge bg-danger"><i className="bi bi-x-circle me-1"/>Çok Uzak</span>
+                          <span className="badge bg-danger"><i className="bi bi-x-circle me-1"/>{tr.rw_loc_far}</span>
                         )}
                       </div>
                     </div>
@@ -481,7 +486,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                 {locStatus === 'error' && (
                   <div className="text-center py-3">
                     <button type="button" className="btn btn-outline-secondary btn-sm" onClick={verifyLocation}>
-                      <i className="bi bi-arrow-clockwise me-1"/> Tekrar Dene
+                      <i className="bi bi-arrow-clockwise me-1"/> {tr.rw_loc_retry}
                     </button>
                   </div>
                 )}
@@ -492,14 +497,14 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
           {/* Miktar */}
           <div className="col-12">
             <label className="form-label text-white-50 small mb-1">
-              Yapay Zeka Tahmini Ağırlık
+              {tr.rw_weight_label}
             </label>
             <div className="d-flex align-items-center p-2 rounded"
               style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.12)',color:'#fff', height: '42px'}}>
               {aiStatus === 'done' ? (
-                <><i className="bi bi-robot text-accent me-2"/> {amountGrams} gram (Tahmini)</>
+                <><i className="bi bi-robot text-accent me-2"/> {amountGrams} {tr.rw_weight_val}</>
               ) : (
-                <span className="text-muted small">Analiz bekleniyor...</span>
+                <span className="text-muted small">{tr.rw_weight_wait}</span>
               )}
             </div>
           </div>
@@ -513,13 +518,13 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
                 className={`btn w-100 wv-btn-record ${isLocationValid ? 'wv-btn-primary' : 'btn-secondary'}`}
                 disabled={status==='signing' || amountGrams === 0 || wasteType === null || (!isLocationValid && !devMode)}>
                 {status === 'signing' ? (
-                  <><span className="spinner-border spinner-border-sm me-2"/>İşlem Onaylanıyor...</>
+                  <><span className="spinner-border spinner-border-sm me-2"/>{tr.rw_btn_signing}</>
                 ) : wasteType === null ? (
-                  <><i className="bi bi-camera me-2"/>Önce Fotoğraf Yükleyin</>
+                  <><i className="bi bi-camera me-2"/>{tr.rw_btn_photo}</>
                 ) : !isLocationValid ? (
-                  <><i className="bi bi-geo-alt me-2"/>Konum Doğrulanamadı</>
+                  <><i className="bi bi-geo-alt me-2"/>{tr.rw_btn_location}</>
                 ) : (
-                  <><i className="bi bi-pen me-2"/>Phantom ile İmzala &amp; Kazan</>
+                  <><i className="bi bi-pen me-2"/>{tr.rw_btn_sign}</>
                 )}
               </button>
             )}
@@ -529,7 +534,7 @@ export default function RecordWaste({ wslBalance, onSuccess }: Props) {
           {aiStatus === 'done' && (
             <div className="col-12 text-center mt-2">
               <button type="button" className="btn btn-link text-muted small" onClick={resetAi}>
-                <i className="bi bi-arrow-counterclockwise me-1"/> Süreci Başa Al
+                <i className="bi bi-arrow-counterclockwise me-1"/> {tr.rw_btn_reset}
               </button>
             </div>
           )}
