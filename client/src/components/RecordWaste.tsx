@@ -243,10 +243,14 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
       },
       (err) => {
         console.error(err)
-        setErrorMsg(tr.rw_err_denied_loc)
+        let errMsg = tr.rw_err_denied_loc
+        if (err.code === 1) errMsg = tr.rw_err_loc_denied
+        else if (err.code === 2) errMsg = tr.rw_err_loc_unavail
+        else if (err.code === 3) errMsg = tr.rw_err_loc_timeout
+        setErrorMsg(errMsg)
         setLocStatus('error')
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     )
   }
 
@@ -488,6 +492,16 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
                     <button type="button" className="btn btn-outline-secondary btn-sm" onClick={verifyLocation}>
                       <i className="bi bi-arrow-clockwise me-1"/> {tr.rw_loc_retry}
                     </button>
+                    {devMode && (
+                      <button type="button" className="btn btn-outline-warning btn-sm ms-2" onClick={() => {
+                        setUserCoords([41.0082, 28.9784]);
+                        setNearestBin({lat: 41.0082, lon: 28.9784, dist: 0});
+                        setLocStatus('success');
+                        setErrorMsg('');
+                      }}>
+                        <i className="bi bi-bug me-1"/> {tr.rw_dev_bypass}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
