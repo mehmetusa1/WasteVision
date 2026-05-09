@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════
+#  WasteVision – .gitignore
+#  Güvenlik katmanı: Keypair, build artifact ve hassas dosyalar
+# ═══════════════════════════════════════════════════════════
+
+# ─── 🔑 SOLANA KEYPAIR & WALLET (KRİTİK GÜVENLİK) ────────
+# Hiçbir keypair dosyası kesinlikle commit edilmemeli!
+target/deploy/*.json
+*.keypair.json
+id.json
+wallet.json
+deployer.json
+*-keypair.json
+
+# Solana CLI varsayılan cüzdan (kullanıcı ev dizini)
+~/.config/solana/id.json
+
+# ─── 🔒 ENVIRONMENT VARİABLELERI ──────────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.*.local
+
+# ─── 📦 NODE_MODULES ──────────────────────────────────────
+node_modules/
+client/node_modules/
+
+# ─── 🔨 BUILD ARTIFACTS ───────────────────────────────────
+# Anchor / Rust build
+target/
+.anchor/
+
+# Vite / React build
+client/dist/
+client/build/
+dist/
+build/
+
+# TypeScript build
+*.tsbuildinfo
+client/tsconfig.tsbuildinfo
+
+# ─── 📋 LOG DOSYALARI ─────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# ─── 💻 OS / IDE ──────────────────────────────────────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# VS Code (kişisel ayarlar hariç, proje ayarları saklanabilir)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# ─── 🦀 RUST ──────────────────────────────────────────────
+**/*.rs.bk
+Cargo.lock
+# Not: Cargo.lock'u lib için ignore et, binary için tutabilirsin
+
+# ─── 🧪 TEST / CACHE ──────────────────────────────────────
+.mocha/
+.nyc_output/
+coverage/
+*.lcov
+
+# ─── 🗂️ MİSCELLANEOUS ────────────────────────────────────
+*.bak
+*.swp
+*.swo
+*~
+.tmp/
+tmp/

@@ -1,0 +1,13 @@
+{
+  "name": "wastevision",
+  "version": "2.0.0",
+  "description": "WasteVision – Solana-Powered Waste Management (Anchor + Phantom)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["waste", "blockchain", "solana", "anchor", "ai"],
+  "author": "",
+  "license": "ISC"
+}

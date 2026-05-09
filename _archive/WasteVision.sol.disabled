@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: MIT
+// ═══════════════════════════════════════════════════════
+//  Bu dosya ARŞİVLENMİŞTİR. Artık kullanılmıyor.
+//  WasteVision projesi Solana/Anchor'a taşınmıştır.
+//  Yeni program: programs/waste_vision/src/lib.rs
+// ═══════════════════════════════════════════════════════
+pragma solidity ^0.8.20;
