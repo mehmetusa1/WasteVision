@@ -40,6 +40,7 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
   const [amountGrams,setAmountGrams]= useState(0)
   const [status,     setStatus]     = useState<Status>('idle')
   const [errorMsg,   setErrorMsg]   = useState('')
+  const [warningMsg, setWarningMsg] = useState('')
 
   // Developer Mode
   const [devMode, setDevMode] = useState(false)
@@ -204,6 +205,7 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
     
     setLocStatus('fetching')
     setErrorMsg('')
+    setWarningMsg('')
 
     navigator.geolocation.getCurrentPosition(
       async (pos: any) => {
@@ -222,7 +224,13 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
           // Fetch recycling amenities within 150m (to ensure we see some on map for demo)
           const query = `[out:json];node(around:200,${lat},${lon})["amenity"="recycling"];out;`
           const API_URL = 'https://overpass-api.de/api/interpreter';
-          const res = await fetch(`${API_URL}?data=${encodeURIComponent(query)}`)
+          
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          
+          const res = await fetch(`${API_URL}?data=${encodeURIComponent(query)}`, { signal: controller.signal })
+          clearTimeout(timeoutId);
+          
           const data: any = await res.json()
           
           if (!data || !data.elements || !Array.isArray(data.elements)) {
@@ -260,6 +268,7 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
           setNearestBin(mockBin);
           setLocStatus('success');
           setErrorMsg('');
+          setWarningMsg(lang === 'tr' ? 'API yoğunluğu nedeniyle yedek veri katmanı kullanılıyor.' : 'Fallback data layer in use due to API congestion.');
         }
       },
       (err: any) => {
@@ -282,6 +291,7 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
     setLocStatus('idle')
     setUserCoords(null)
     setNearestBin(null)
+    setWarningMsg('')
     if (fileInputRef.current) fileInputRef.current.value = ''
     if (leafletMapRef.current) {
       leafletMapRef.current.remove()
@@ -400,6 +410,13 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
             <strong>{tr.rw_success}</strong><br/>
             <small style={{color:'rgba(255,255,255,0.6)'}}>{tr.rw_success_sub}</small>
           </div>
+        </div>
+      )}
+
+      {warningMsg && status !== 'success' && (
+        <div className="alert wv-alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
+          <i className="bi bi-exclamation-triangle-fill flex-shrink-0"/>
+          <span>{warningMsg}</span>
         </div>
       )}
 
