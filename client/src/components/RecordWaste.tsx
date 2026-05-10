@@ -206,24 +206,35 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
     setErrorMsg('')
 
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude
-        const lon = pos.coords.longitude
+      async (pos: any) => {
+        const lat = pos?.coords?.latitude
+        const lon = pos?.coords?.longitude
+        
+        if (lat === undefined || lon === undefined) {
+          setErrorMsg(tr.rw_err_api_loc)
+          setLocStatus('error')
+          return
+        }
+        
         setUserCoords([lat, lon])
 
         try {
           // Fetch recycling amenities within 150m (to ensure we see some on map for demo)
           const query = `[out:json];node(around:200,${lat},${lon})["amenity"="recycling"];out;`
           const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`)
-          const data = await res.json()
+          const data: any = await res.json()
+          
+          if (!data || !data.elements || !Array.isArray(data.elements)) {
+            throw new Error("Invalid or empty Overpass API response")
+          }
           
           const bins = data.elements.map((e: any) => ({ lat: e.lat, lon: e.lon }))
           setAllBins(bins)
 
-          if (bins.length > 0) {
+          if (bins && bins.length > 0) {
             let minD = Infinity
             // dist alanını baştan hesaplayarak başlat (ilk eleman güncellenmeyebilir)
-            let nearest = { ...bins[0], dist: calculateDistance(lat, lon, bins[0].lat, bins[0].lon) }
+            let nearest: any = { ...bins[0], dist: calculateDistance(lat, lon, bins[0].lat, bins[0].lon) }
             minD = nearest.dist
             bins.forEach((b: any) => {
               const d = calculateDistance(lat, lon, b.lat, b.lon)
@@ -235,18 +246,18 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
           }
           
           setLocStatus('success')
-        } catch (err) {
+        } catch (err: any) {
           console.error(err)
           setErrorMsg(tr.rw_err_api_loc)
           setLocStatus('error')
         }
       },
-      (err) => {
+      (err: any) => {
         console.error(err)
         let errMsg: string = tr.rw_err_denied_loc
-        if (err.code === 1) errMsg = tr.rw_err_loc_denied
-        else if (err.code === 2) errMsg = tr.rw_err_loc_unavail
-        else if (err.code === 3) errMsg = tr.rw_err_loc_timeout
+        if (err && err.code === 1) errMsg = tr.rw_err_loc_denied
+        else if (err && err.code === 2) errMsg = tr.rw_err_loc_unavail
+        else if (err && err.code === 3) errMsg = tr.rw_err_loc_timeout
         setErrorMsg(errMsg)
         setLocStatus('error')
       },
