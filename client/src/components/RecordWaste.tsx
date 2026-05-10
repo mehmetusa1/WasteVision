@@ -243,7 +243,7 @@ export default function RecordWaste({ wslBalance, onSuccess, lang }: Props) {
       },
       (err) => {
         console.error(err)
-        let errMsg = tr.rw_err_denied_loc
+        let errMsg: string = tr.rw_err_denied_loc
         if (err.code === 1) errMsg = tr.rw_err_loc_denied
         else if (err.code === 2) errMsg = tr.rw_err_loc_unavail
         else if (err.code === 3) errMsg = tr.rw_err_loc_timeout
